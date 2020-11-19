@@ -13,19 +13,29 @@
 // limitations under the License.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using ConsoleApp1;
 using MediatR;
 
 namespace ClassLibrary1
 {
-    class HandlerWithNoResponse<TRequest> : AsyncRequestHandler<HubRequestWrapper<TRequest>>
-        where TRequest : IHubRequest
+    public class CommandDispatcher
     {
-        protected override Task Handle(HubRequestWrapper<TRequest> request, CancellationToken cancellationToken)
+        private readonly IMediator _mediator;
+
+        public CommandDispatcher(IMediator mediator)
         {
-            throw new NotImplementedException();
+            _mediator = mediator;
+        }
+
+        public async Task DispatchAsync<TRequest>(TRequest request)
+            where TRequest : IHubRequest
+        {
+            var targetType = typeof(HubRequestWrapper<>);
+
+            var instance = Activator.CreateInstance(targetType.MakeGenericType(typeof(TRequest)), request);
+
+            await _mediator.Send((HubRequestWrapper<TRequest>) instance);
         }
     }
 }

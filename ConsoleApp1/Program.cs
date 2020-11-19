@@ -14,26 +14,39 @@ namespace ConsoleApp1
             var asm = typeof(Program).Assembly;
             var services = new ServiceCollection();
 
-            services.AddSingleton<Dispatcher>();
+            services.AddSingleton<RequestDispatcher>();
+            services.AddSingleton<CommandDispatcher>();
             services.AddMediatR(asm);
 
             var sp = services.BuildServiceProvider();
 
-            var request = new ChangeSupplier();
-            request.CustomerNo = 5;
+            var request = new ChangeSupplier {CustomerNo = 5};
 
-            var dispatcher = sp.GetRequiredService<Dispatcher>();
+            var requestDispatcher = sp.GetRequiredService<RequestDispatcher>();
+            var commandDispatcher = sp.GetRequiredService<CommandDispatcher>();
 
-            var response2 = await dispatcher.DispatchAsync(request);
+            await commandDispatcher.DispatchAsync(new MoveIn() {CustomerNo = 3});
+            var response2 = await requestDispatcher.DispatchAsync(request);
 
         }
     }
 
-
-
-    class ChangeSupplierHandler : Flow1<ChangeSupplier>
+    class MoveInHandler : CommandHandler<MoveIn>
     {
-        public override Task<bool> ValidateAsync(ChangeSupplier request, CancellationToken cancellationToken)
+        protected override async Task<bool> ValidateAsync(MoveIn actionData, CancellationToken cancellationToken)
+        {
+            await System.Console.Out.WriteLineAsync("Hello");
+            return true;
+        }
+
+
+    }
+
+    class ChangeSupplierHandler : ClassLibrary1.RequestHandler<ChangeSupplier>
+    {
+
+
+        protected override Task<bool> ValidateAsync(ChangeSupplier request, CancellationToken cancellationToken)
         {
             return base.ValidateAsync(request, cancellationToken);
         }

@@ -19,14 +19,14 @@ using MediatR;
 
 namespace ClassLibrary1
 {
-    public abstract class HandlerWithResponse<TRequest, TResponse> : IRequestHandler<HubRequestWrapper<TRequest, TResponse>, TResponse>
-        where TRequest : IHubRequest where TResponse : IHubResponse
+    public abstract class BaseCommandHandler<TRequest> : AsyncRequestHandler<HubRequestWrapper<TRequest>>
+        where TRequest : IHubRequest
     {
-        protected abstract Task<TResponse> ProcessAsync(TRequest request, CancellationToken cancellationToken);
+        protected abstract Task HandleAsync(TRequest request, CancellationToken cancellationToken);
 
-        public async Task<TResponse> Handle(HubRequestWrapper<TRequest, TResponse> hubRequest, CancellationToken cancellationToken)
+        protected override Task Handle(HubRequestWrapper<TRequest> request, CancellationToken cancellationToken)
         {
-            return await ProcessAsync(hubRequest.Request, cancellationToken);
+            return HandleAsync(request.Request, cancellationToken);
         }
     }
 }

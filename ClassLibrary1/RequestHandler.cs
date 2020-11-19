@@ -17,17 +17,16 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1
 {
-    public class Flow1<TRequest> : HandlerWithResponse<TRequest, IHubResponse>
+    public class RequestHandler<TRequest> : BaseRequestHandler<TRequest, IHubResponse>
         where TRequest : IHubRequest
     {
-        protected Flow1() { }
+        protected RequestHandler() { }
 
-        public virtual Task<bool> ValidateAsync(TRequest request, CancellationToken cancellationToken) => Task.FromResult(true);
-        public virtual Task<bool> AcceptAsync(TRequest request, CancellationToken cancellationToken) => Task.FromResult(true);
-        public virtual Task<IHubResponse> RespondAsync(TRequest request, CancellationToken cancellationToken) => Task.FromResult<IHubResponse>(new HubResponse());
+        protected virtual Task<bool> ValidateAsync(TRequest request, CancellationToken cancellationToken) => Task.FromResult(true);
+        protected virtual Task<bool> AcceptAsync(TRequest request, CancellationToken cancellationToken) => Task.FromResult(true);
+        protected virtual Task<IHubResponse> RespondAsync(TRequest request, CancellationToken cancellationToken) => Task.FromResult<IHubResponse>(new HubResponse());
 
-
-        protected override async Task<IHubResponse> ProcessAsync(TRequest request, CancellationToken cancellationToken)
+        protected override async Task<IHubResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             if (!await ValidateAsync(request, cancellationToken))
             {

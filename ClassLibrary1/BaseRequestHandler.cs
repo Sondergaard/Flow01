@@ -12,31 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using ConsoleApp1;
 using MediatR;
 
 namespace ClassLibrary1
 {
-    public class Dispatcher
+    public abstract class BaseRequestHandler<TRequest, TResponse> : IRequestHandler<HubRequestWrapper<TRequest, TResponse>, TResponse>
+        where TRequest : IHubRequest where TResponse : IHubResponse
     {
-        private readonly IMediator _mediator;
+        protected abstract Task<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken);
 
-        public Dispatcher(IMediator mediator)
+        public async Task<TResponse> Handle(HubRequestWrapper<TRequest, TResponse> hubRequest, CancellationToken cancellationToken)
         {
-            _mediator = mediator;
-        }
-
-        public async Task<IHubResponse> DispatchAsync<TRequest>(TRequest request)
-            where TRequest : IHubRequest
-        {
-            var targetType = typeof(HubRequestWrapper<,>);
-
-            var instance = Activator.CreateInstance(targetType.MakeGenericType(typeof(TRequest), typeof(IHubResponse)), request);
-
-            return await _mediator.Send((HubRequestWrapper<TRequest, IHubResponse>) instance);
+            return await HandleAsync(hubRequest.Request, cancellationToken);
         }
     }
 }
